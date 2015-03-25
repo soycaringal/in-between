@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<!--
+    Copyright (c) 2012-2014 Adobe Systems Incorporated. All rights reserved.
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <!-- <link rel="stylesheet" type="text/css" href="css/jquery.mobile.theme-1.4.5.min.css" /> -->
+        
+        <title>Card Game</title>
+        <style type="text/css">
+         body {
+            color: white;
+            background: url('img/table.jpg');
+            background-repeat: no-repeat;
+        }
+        div#fake_box{
+            /*top: 100px;*/
+            /*left: 20%;*/
+            display: none;
+            height: 88px;
+            width: 200px;
+            border: solid black 2px;
+            background-color: gray;
+            color: black;
+            text-align:center;
+              margin: 0 auto;
+              padding: 5px;
+            /*position: absolute;*/
+            /*text-align: center;*/
+        }
+        .desk {
+            margin: 0 auto;
+            position: fixed;
+            width: 100%;
+            text-align: center;
+        }
+        .chair_1 {
+            bottom: 0;
+            margin: 0 auto;
+            position: fixed;
+            width: 100%;
+            text-align: center;
+        }
+        .chair_2 {
+            margin: auto 0;
+            position: fixed;
+            height: 100%;
+            text-align: left;
+        }
+        .chair_3 {
+            /*margin: auto 0;*/
+            position: fixed;
+            height: 100%;
+            /*text-align: right;*/
+            right: 0;
+        } 
+        .deal {
+            display: none;
+        }
+        .desk_open {
+            display: none;
+        }
+        </style>
+    </head>
+<body  >
+    <div id="content" data-role="page">
+        <h1><!-- PhoneGap --></h1>
+         <div class="desk">
+            <h2 class="player_name"></h2>
+            <img class="desk_card_1" src="img/cards/c1.gif" >
+            <img class="desk_open" src="img/cards/b2fv.gif" >
+             <!-- <div id="fake_box">
+                <br>Higher or Lower<br><br>
+                <button style="float:left;" class="higher" onclick="deal()">Higher</button>
+                <button style="float:right;" class="lower" onclick="deal()">Lower</button>
+            </div> -->
+
+
+        <div class="chair_1">
+            <div class="text_1">aw</div>
+            <h2 class="player_name"></h2>
+            <img class="card_1" src="img/cards/b2fv.gif" >
+            <img class="card_2" src="img/cards/b2fv.gif" >
+            <button class="deal" onclick="show_box()" >Bet!</button>
+               
+        </div>
+
+        <!-- <div class="chair_2">
+            <h2 class="player_name"></h2>
+            <img class="card_1" src="img/cards/b2fh.gif" >
+            <img class="card_2" src="img/cards/b2fh.gif" >
+            <button class="deal" onclick="show_box()" >Bet!</button>       
+        </div>
+
+        <div class="chair_3">
+            <h2 class="player_name"></h2>
+            <img class="card_1" src="img/cards/b2fv.gif" >
+            <img class="card_2" src="img/cards/b2fv.gif" >
+            <button class="deal" onclick="show_box()" >Bet!</button>        -->
+        </div>
+    </div>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/jquery.mobile-1.4.5.min.js"></script>
+
+<!-- <script type="text/javascript" src="cordova.js"></script> -->
+<script type="text/javascript" src="js/index.js"></script>
+<script type="text/javascript" src="js/custom.js"></script>
+<script type="text/javascript">
+    $( document ).bind( "mobileinit", function() {
+         render();
+    // Make your jQuery Mobile framework configuration changes here!
+    $.support.cors = true;
+    $.mobile.allowCrossDomainPages = true; 
+
+});
+     $('#content').bind( "pageinit", function() {
+         $.mobile.loading( 'show', { theme: "b", text: "", textonly: false});
+
+        render();
+     });
+
+    function show_box(player_name, id) {
+        shuffle();
+    }
+
+    var reset = false;
+    var cards = [[]];
+    var player_name = 'test';
+    var turn_player;
+    var url = 'http://192.168.0.135/Work/Game/www/query.php'
+    var desk_card_1 = '';
+    var desc_card_2 = '';
+    var turn_id = 1;
+    var startGame = false;
+
+    function render() {
+        // console.log('test');
+        // setInterval(function(){
+            checkUser();
+        // }, 500);
+    }
+
+    function bet(bet, player_name, id) {
+        $('div#fake_box').css('display','none');
+        shuffle();
+
+    }
+
+    function checkUser() {
+        // alert('aw');
+        $('.chair_1 .card_1').attr('src','img/cards/c1.gif');
+        reset = false;
+        $.ajax({
+            url: url,
+            type: "post",
+            dataType: 'json',
+            data: {'type' : 'check_user'},
+             ContentType: 'application/json',
+            success: function (result) {
+                // data =  (result);
+                // // console.log(result);
+                // suit_1 = suit_2 = '';
+                // $.each(data, function(key, value) {
+                //     card_1 = JSON.parse(value.card_1);
+                //     card_2 = JSON.parse(value.card_2);
+                //     suit_1 = getCardSuit(card_1.suit);
+                //     suit_2 = getCardSuit(card_2.suit);
+
+                //     if (value.player_name == player_name) {
+                //         id = value.id;
+                //     }
+
+                //     if (value.turn == 1) {
+                //          main_card_1 = card_1.num;
+                //         main_card_2 = card_2.num;
+                //     }
+
+                //     card_1.num = getCardNum(card_1.num);
+                //     card_2.num = getCardNum(card_2.num);
+                //     // console.log('.chair_'+value.id+' .card_1').attr('src','http://192.168.0.135/Work/Game/www/img/cards/'+suit_1+card_1.num+'.gif');
+                //     console.log('.chair_'+value.id.toString()+' .card_1');
+
+                //     //       $(".chair_1").live('tap', function() {
+                //     //         alert('aw');
+                //     //         $(".chair_'+value.id+' .card_1").attr("src", "images/tempProfilePic.jpg");
+                //     // });
+                //     // $('.chair_'+value.id+' .card_1').attr('src','http://192.168.0.135/Work/Game/www/img/cards/'+suit_1+card_1.num+'.gif');
+                //     // $('.chair_'+value.id+' .card_2').attr('src','http://192.168.0.135/Work/Game/www/img/cards/'+suit_2+card_2.num+'.gif');
+                //     // $('.chair_'+value.id+' .player_name').html(value.player_name);
+                //     if (value.turn == 1) {
+                //          main_card_1 = card_1.num;
+                //         main_card_2 = card_2.num;
+                //         turn_id = value.id;
+                //         reset = true;
+                //         turn_player = value.player_name;
+                //         $('.chair_'+value.id+' button.deal').css({'display':'inline'});
+
+                //         if(player_name != value.player_name) {
+                //             // $('.chair_'+value.id+' button.deal').attr({'disabled':'disabled'});
+                //         }
+                //         $('.chair_'+value.id+' .deal').attr('onclick',"show_box('"+value.player_name+"','"+(parseInt(value.id) + 1)+"')");
+                //     } else {
+                //         // if(!reset)
+                //         // reset = false;
+                //          $('.chair_'+value.id+' .deal').css('display','none');
+                //           $('.chair_'+value.id+' div.ui-btn ').css('display','none');
+                        
+                //     }
+
+                //     if (startGame) {
+                //         num_1 = getRandomInt(1, 13, 0);
+                //         num_2 = getRandomInt(1, 13, num_1);
+                //         suit_1 = getRandomInt(1, 4, 0);
+                //         suit_2 = getRandomInt(1, 4, suit_1);
+                        
+                //         card_1 = [num_1,suit_1];
+                //         card_2 = [num_2,suit_2];
+                //         saveCard(card_1, card_2, value.player_name);
+                //     }
+                // });
+    
+                // if(startGame) {
+                //     startGame = false;
+                // }
+
+                // if (!reset) {
+                //     startGame = true;
+                //      $.ajax({
+                //         url: url,
+                //         type: "post",
+                //         data: {'type' : 'reset'},
+                //         success: function (result) {
+                //             // console.log(result);
+                //         },
+                //         error: function (request,error) {
+                //             // console.log(request);
+                //             alert('Network error has occurred please try again!');
+                //         }
+                //     });
+                // }
+            },
+                // data = JSON.parse(result);
+
+            error: function (request) {
+                // alert(request.responseText);
+            }
+        });
+    }
+
+    $('#startGame').click(function(){
+        startGame();
+    });
+
+    function shuffle() {
+         $.ajax({
+            url: url,
+            type: "post",
+            data: {'type' : 'deal','id' : turn_id , 'player_name' : turn_player},
+            success: function (result) {
+                // console.log(result);
+            },
+            error: function (request,error) {
+                // console.log(request);
+                alert('Network error has occurred please try again!');
+            }
+        });
+
+        num_1 = getRandomInt(1, 13, 0);
+        suit_1 = getRandomInt(1, 4, 0);
+        suit_1 = getCardSuit(suit_1);
+        desk_card_1 = getCardNum(num_1);
+
+        // console.log(desk_card_1 + ' : ' + main_card_1 + '-' + main_card_2);
+        $('.desk .desk_open').css('display','inline');
+        $('.desk .desk_card_1').attr('src','img/cards/'+suit_1+desk_card_1+'.gif');
+        if(main_card_1 > main_card_2) {
+            if(main_card_1 > desk_card_1 && desk_card_1 > main_card_2 && desk_card_1 != main_card_1 && desk_card_1 != main_card_2) {
+                alert('You Win!');
+            } else {
+                alert('You lose!');
+            }
+         } else {
+            if(main_card_1 < desk_card_1 && desk_card_1 < main_card_2 && desk_card_1 != main_card_1 && desk_card_1 != main_card_2) {
+                alert('You Win!');
+            } else {
+                alert('You lose!');
+            }
+
+        }
+    }
+
+    function startGame() {
+        num_1 = getRandomInt(1, 13, 0);
+        num_2 = getRandomInt(1, 13, num_1);
+        suit_1 = getRandomInt(1, 4, 0);
+        suit_2 = getRandomInt(1, 4, suit_1);
+        
+        suit_1 = getCardSuit(suit_1);
+        suit_2 = getCardSuit(suit_2);
+        
+        card_1 = [num_1,suit_1];
+        card_2 = [num_2,suit_2];
+
+        saveCard(card_1, card_2, player_name);
+        displayCard(card_1, card_2, player_name);
+    }
+
+    function addUser(card_1, card_2, player_name) {
+        $.ajax({
+            url: url,
+            type: "post",
+            data: {'type' : 'adduser','card_1' : '', 'card_2' : '', 'player_name' : player_name},
+            success: function (result) {
+                // console.log(result);
+            },
+            error: function (request,error) {
+                // alert('Network error has occurred please try again!');
+            }
+        });
+    }
+
+
+    function saveCard(card_1, card_2, player_name) {
+        $.ajax({
+            url: url,
+            type: "post",
+            data: {'type' : 'update_user','card_1' : card_1, 'card_2' : card_2, 'player_name':player_name},
+            success: function (result) {
+                // console.log(result);
+            },
+            error: function (request,error) {
+                // alert();
+            }
+        });
+    }
+
+    function getCardSuit(card) {
+        suit = '';
+        switch(card) {
+            case '1' :
+                suit = 'c';
+                break;
+            case '2' :
+                suit = 'd';
+                break;
+            case '3' :
+                suit = 'h';
+                break;
+            case '4' :
+                suit = 's';
+                break;
+        }
+        return suit;
+    }
+
+    function getCardNum(card) {
+        num = '';
+        switch(card) {
+            case '11' :
+            case 11 :
+                num = 'j';
+                break;
+            case '12' :
+            case 12 :
+                num = 'q';
+                break;
+            case '13' :
+            case 13 :
+                num = 'k';
+                break;
+            default:
+                num = card;
+                break;
+        }
+        return num;
+    }
+
+    function displayCard(card_1, card_2, player_name) {
+        suit = []
+        
+        suit_1 = getCardSuit(card_1[1]);
+        suit_2 = getCardSuit(card_2[1]);
+        
+        card_1[0] = getCardNum(card_1[0]);
+        card_2[0] = getCardNum(card_2[0]);
+
+
+
+        $('.chair_1 .card_1').attr('src','img/cards/'+suit_1+card_1[0]+'.gif');
+        $('.chair_1 .card_2').attr('src','img/cards/'+suit_2+card_2[0]+'.gif');
+        alert(player_name);
+        $('.chair_1 .player_name').html(player_name);
+
+    
+    } 
+
+    function getRandomInt(min, max, card_1) {
+        rnd = Math.floor(Math.random() * (max - min)) + min;
+        if (card_1 != 0) {
+            if(rnd == card_1) {
+               return getRandomInt(min, max, rnd); 
+            } else {
+              return rnd;
+            }
+        }
+        return rnd;
+    }
+
+</script>
+    </body>
+</html>
